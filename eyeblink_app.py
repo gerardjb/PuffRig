@@ -321,7 +321,7 @@ if __name__ == '__main__':
 
         print('starting server')
         #host settings in 'this' namespace location if desired here
-        socketio.run(app, host='169.254.67.160', port=5010, use_reloader=True)
+        socketio.run(app, host='10.9.67.150', port=5010, use_reloader=True)
         print('finished')
     except:
         print('...exiting')

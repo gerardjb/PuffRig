@@ -24,8 +24,6 @@ import pickle
 import csv
 import os
 
-#Setting the camera-specific variables
-
 #Breaking into the stream, clocks
 global camera
 camera = []
@@ -45,7 +43,7 @@ GPIO.setwarnings(False)
 GPIO.cleanup()
 GPIO.setmode(GPIO.BCM)
 on_pin = 27
-GPIO.setup(on_pin,GPIO.IN)
+GPIO.setup(on_pin,GPIO.IN,pull_up_down=GPIO.PUD_UP)
 led_pin = 4
 GPIO.setup(led_pin,GPIO.OUT)
 GPIO.output(led_pin, GPIO.LOW)
@@ -75,8 +73,9 @@ class masterStream:
     def interrupt_on(on_pin):
         #What we do when low-level interrupt pin goes high
         global streamOn
+        global justOff
         print('streamOn = '+ str(streamOn))
-        if streamOn:
+        if streamOn and not justOff:
             global camera
             global trial_start
             global d
@@ -164,8 +163,8 @@ class masterStream:
                             justOff = True
                         elif ~GPIO.input(on_pin) and justOff:
                             t = time.time()
-                            camera.annotate_text_size = 12
-                            camera.annotate_text = 'not recording'
+                            camera.annotate_text_size = 6
+                            camera.annotate_text = 'off'
                             #Also do initialization of data paths
                             savePathInit = 'data/'
                             dateStr = time.strftime("%Y%m%d")
@@ -222,11 +221,19 @@ class masterStream:
             global output
             output = masterStream.StreamingOutput()
             #Uncomment the next line to change your Pi's Camera rotation (in degrees)
-            #camera.rotation = 90
+            camera.rotation = 180
+            #Doing the static levels on camera
+            time.sleep(2) #let the levels settle
+            camera.shutter_speed = camera.exposure_speed
+            camera.exposure_mode = 'off'
+            g = camera.awb_gains
+            camera.awb_mode = 'off'
+            camera.awb_gains = g
+            #Setting up camera clock, outputs, and initial image annotation
             camera.clock_mode = 'raw'
             camera.start_recording(output, format='mjpeg')
             camera.annotate_background = picamera.Color('black')
-            camera.annotate_text_size = 14
+            camera.annotate_text_size = 6
             camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             #Setting up the low level interrupts with optional LED vis
