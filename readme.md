@@ -1,5 +1,4 @@
-This is documentation for controlling a behavioral experiment using an Arduino microcontroller with a Python based web interface. First, we document building an Arduino controlled motorized circular treadmill. Next, we provide Python source code to control an experiment through a web-browser. Our aim is to provide a starting point for open-source behavioral experiments that can be extended to new experimental designs.
+This is code for controlling a behavioral experiment using two Arduino microcontrollers with a Python based web interface. Code is run through a Raspberry pi and data about the behavior is recorded via a picamera. Trial triggering is designed to allow scanimage acquisition start triggering for 2P imaging, but this is of course not necessary. See a sample image of web-based GUI with camera output layout here:
 
-Please see the documentation site at: [http://blog.cudmore.io/treadmill/](http://blog.cudmore.io/treadmill/)
 
-<IMG SRC="https://github.com/cudmore/treadmill/blob/master/docs/docs/img/screenshot1.png" WIDTH=450 style="border:1px solid gray">
+<IMG SRC="https://github.com/gerardjb/EyeblinkRig/blob/master/docs/SampleWebpageViews.PNG" WIDTH=450 style="border:1px solid gray">
