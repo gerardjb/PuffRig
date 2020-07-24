@@ -38,8 +38,8 @@ struct trial
   //Puff stuff
   unsigned long PuffStartMillis; //millis at start of current Puff
   unsigned long prePuffDur; //ms time in trial before puff
-  int puffNum; //number of puffs to be applied
-  unsigned long puffFreq; //frequency of puff delivery
+  unsigned long puffNum; //number of puffs to be applied
+  float puffFreq; //frequency of puff delivery
   
 };
 
@@ -49,6 +49,7 @@ unsigned long interTrialInterval;//ms
 unsigned long sumITI;//ms holds sum of all ITIs to calculate when to end session
 boolean inPrePuff;
 boolean inPuff;
+int iPuff;
 int tmpTrial;
 
 
@@ -93,13 +94,13 @@ void setup()
 
   trial.trialIsRunning = false;
   trial.trialDur = 1000; // epoch has to be >= (preDur + xxx + postDur)
-  trial.numTrial = 1;
+  trial.numTrial = 2;
   
   trial.sessionDur = (trial.numTrial*trial.trialDur); //
 
   trial.prePuffDur = 250;
-  trial.puffNum = 100;
-  trial.puffFreq = 0.5;
+  trial.puffNum = 10;
+  trial.puffFreq = 2;
   trial.interTrialInterval = 5000;//ms
   trial.ITIstartMillis = 0;//ms
 
@@ -135,7 +136,7 @@ void setup()
 //Start session
 void startSession(unsigned long now) {
   if (trial.trialIsRunning==false) {
-    trial.sessionNumber = 0;
+    trial.sessionNumber = 1;
     
     trial.sessionStartMillis = now;
     trial.trialStartMillis = now;
@@ -151,6 +152,7 @@ void startSession(unsigned long now) {
 
     trial.sessionIsRunning = true;
     trial.trialIsRunning = true;
+    interTrialInterval = trial.interTrialInterval*1000;
     
   }
 }
@@ -160,9 +162,13 @@ void startTrial(unsigned long now){
   if (trial.trialIsRunning==false){
     trial.currentTrial += 1;
 
+    trial.trialDur = trial.puffNum * 1/trial.puffFreq * 1000 + 500;
     trial.trialStartMillis = now;
+    
     serialOut(now,"startTrial",trial.currentTrial);
-
+    serialOut(now, "numTrial", trial.numTrial);
+    serialOut(now, "trialDur", trial.trialDur);
+    
     trial.trialIsRunning = true;
 
 
@@ -184,7 +190,7 @@ void stopTrial(unsigned long now) {
   int i = 0;
   while (Serial.available() == 0) {
 	delay(10);
-	serialOut(now,'Waiting',i);
+	serialOut(now,"Waiting",i);
 	i+=i;
   }
   //Now collect them
@@ -193,11 +199,13 @@ void stopTrial(unsigned long now) {
     inString.replace("\n","");
     inString.replace("\r","");
     SerialIn(now, inString);
+    delay(10);
   }
   
   //Set time to wait until next trial starts
   now = millis();//cause we don't know how long we'll have to wait to receive signal
-  interTrialInterval = trial.interTrialInterval;
+  interTrialInterval = trial.interTrialInterval*1000;
+  //delay(interTrialInterval);
   trial.ITIstartMillis = now;
   //sum ITIs so they can be counted towards total session time
   sumITI = sumITI + interTrialInterval;
@@ -232,6 +240,7 @@ void SerialIn(unsigned long now, String str) {
     Serial.println("version=" + versionStr);
   } else if (str == "startSession") {
     startSession(now);
+    serialOut(now,"arduinoStartSession",trial.sessionNumber);
   }
   else if (str == "stopSession") {
     stopSession(now);
@@ -334,15 +343,15 @@ void updateEncoder(unsigned long now) {
 
 //Triggering the Puff
 void updatePuff(unsigned long now){
-  int iPuff;
+  
   if (!trial.trialIsRunning) {//wating for trial to begin
-	iPuff = 0;
+	  iPuff = 0;
   }else if(iPuff == trial.puffNum){//got all the puffs
-	
+
   }else if (trial.trialIsRunning){//starting an stopping puffs
     //Turning Puff on and off while correct trial type running
-    unsigned long puffStart = trial.trialStartMillis + trial.prePuffDur + 1/trial.puffFreq*1000*iPuff;
-    unsigned long puffStop = 20 + puffStart;//after 5 millis, turn TTL off
+    unsigned long puffStart = trial.trialStartMillis + trial.prePuffDur + round(1/trial.puffFreq*1000*iPuff);
+    unsigned long puffStop = 250 + puffStart;//after 5 millis, turn TTL off
     if (!ledPuff.isOnLED && now >= puffStart && now <= puffStop){
       ledPuff.isOnLED = true;
       trial.PuffStartMillis = now;
@@ -351,7 +360,9 @@ void updatePuff(unsigned long now){
     } else if(ledPuff.isOnLED && now>puffStop){
       ledPuff.isOnLED = false;
       digitalWrite(ledPuff.ledPin,LOW);
-	  iPuff += 1;
+	    iPuff += 1;
+      serialOut(now,"nextPuff",trial.trialStartMillis + trial.prePuffDur + round(1/trial.puffFreq*1000*iPuff));
+      serialOut(now,"iPuff",iPuff);
     }
   }
 }

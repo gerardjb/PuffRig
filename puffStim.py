@@ -64,12 +64,11 @@ class eyeblink():
         
         try:
             self.ser = serial.Serial(options['serial']['port'], options['serial']['baud'], timeout=0.25)
-            
         except:
             options['serial']['port'] = altSerialStr
             try:
                 self.ser = serial.Serial(options['serial']['port'], options['serial']['baud'], timeout = 0.25)
-            
+
             except:
                 self.ser = None
                 print "======================================================"
@@ -127,13 +126,8 @@ class eyeblink():
                     #stop trial
                     parts = str.split(',')
                     if len(parts) > 1:
-                        if parts[1] == 'startSession':
-                            print '--->>> eyeblink.NewSerialData() is starting session'
-                            self.startSession()
-                        if parts[1] == 'stopSession':
-                            print '--->>> eyeblink.NewSerialData() is stopping session'
-                            self.stopSession()
                         if parts[1] == 'stopTrial':
+			    print 'Set justFinished to True'
                             self.trial['justFinished'] = True
 
                             
@@ -155,6 +149,7 @@ class eyeblink():
         if self.socketio:
             self.socketio.emit('serialdata', {'data': "=== Session " + str(self.trial['sessionNumber']) + " ==="})
         
+	time.sleep(0.01)
         self.ser.write('startSession\n')
         self.trialRunning = 1
 

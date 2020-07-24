@@ -1,1 +1,0 @@
-session=1;trial=0;date=20200724;time=153123;
