@@ -181,8 +181,11 @@ void stopTrial(unsigned long now) {
   }
   
   //Wait for next trial params to become available
+  int i = 0;
   while (Serial.available() == 0) {
-	delay(1);
+	delay(10);
+	serialOut(now,'Waiting',i);
+	i+=i;
   }
   //Now collect them
   while (Serial.available() > 0) {
@@ -332,18 +335,18 @@ void updateEncoder(unsigned long now) {
 //Triggering the Puff
 void updatePuff(unsigned long now){
   int iPuff;
-  if (!trial.trialIsRunning || iPuff) {//wating for trial to begin
+  if (!trial.trialIsRunning) {//wating for trial to begin
 	iPuff = 0;
   }else if(iPuff == trial.puffNum){//got all the puffs
 	
   }else if (trial.trialIsRunning){//starting an stopping puffs
     //Turning Puff on and off while correct trial type running
     unsigned long puffStart = trial.trialStartMillis + trial.prePuffDur + 1/trial.puffFreq*1000*iPuff;
-    unsigned long puffStop = 5 + puffStart;//after 5 millis, turn TTL off
+    unsigned long puffStop = 20 + puffStart;//after 5 millis, turn TTL off
     if (!ledPuff.isOnLED && now >= puffStart && now <= puffStop){
       ledPuff.isOnLED = true;
       trial.PuffStartMillis = now;
-      serialOut(now,"Puff",trial.currentTrial);
+      serialOut(now,"Puff",iPuff);
       digitalWrite(ledPuff.ledPin,HIGH);
     } else if(ledPuff.isOnLED && now>puffStop){
       ledPuff.isOnLED = false;

@@ -115,7 +115,7 @@ class eyeblink():
         '''
         #we want 'millis,event,val', if serial data does not match this then do nothing
         try:
-            if len(str)>0 and self.socketio:
+            if len(str)>0:
                     #save to file
                     if self.filePtr:
                         self.filePtr.write(str + '\n')
