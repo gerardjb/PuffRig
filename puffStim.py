@@ -45,8 +45,7 @@ trial['trialNumber'] = 0
 trial['trialDur'] = 5000
 trial['numTrial'] = 3
 
-trial['interTrialIntervalLow'] = 5000 #ms, lowest ITI from random draw
-trial['interTrialIntervalHigh'] = 20000 #ms, highest ITI
+trial['interTrialInterval'] = 5000 #ms, ITI
 trial['prePuffDur'] = 250 #ms, imaged time prior to stim presentation
 
 trial['justFinished'] = False

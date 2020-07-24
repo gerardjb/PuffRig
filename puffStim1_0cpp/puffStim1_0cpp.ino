@@ -68,7 +68,7 @@ struct ledPuff
 
 
 //Version, defining structures and aliases
-String versionStr = "eyeblink3_4.cpp";
+String versionStr = "puffStim1_0.cpp";
 typedef struct trial Trial;
 typedef struct rotaryencoder RotaryEncoder;
 typedef struct ledPuff LedPuff;
@@ -121,7 +121,7 @@ void setup()
 
   //CS/US structure and pin settings, intially at Arduino grnd
   ledPuff.ledPin = 4;
-  ledCS.isOnLED = false;
+  ledPuff.isOnLED = false;
   pinMode(ledPuff.ledPin,OUTPUT);
   digitalWrite(ledPuff.ledPin,LOW);
   
@@ -135,13 +135,13 @@ void setup()
 //Start session
 void startSession(unsigned long now) {
   if (trial.trialIsRunning==false) {
-    trial.sessionNumber += 1;
+    trial.sessionNumber = 0;
     
     trial.sessionStartMillis = now;
     trial.trialStartMillis = now;
 
-    trial.sessionDur = trial.trialDur * trial.numTrial;
-    serialOut(now, "sessionDur",trial.sessionDur);
+    trial.trialDur = trial.puffNum * 1/trial.puffFreq * 1000 + 500;
+    serialOut(now, "sessionDur",0);
     serialOut(now, "numTrial", trial.numTrial);
     serialOut(now, "trialDur", trial.trialDur);
     trial.currentTrial = 0;
@@ -291,7 +291,7 @@ void SetTrial(String name, String strValue) {
     trial.prePuffDur = value;
     Serial.println("trial.prePuffDur=" + String(trial.prePuffDur));   
   } else if (name=="puffNum") {
-    trial.puffNUm = value;
+    trial.puffNum = value;
     Serial.println("trial.puffNum=" + String(trial.puffNum));
   } else if (name=="puffFreq") {
     trial.puffFreq = value;
@@ -334,7 +334,7 @@ void updatePuff(unsigned long now){
   int iPuff;
   if (!trial.trialIsRunning || iPuff) {//wating for trial to begin
 	iPuff = 0;
-  }else if(iPuff == trial.numPuff){//got all the puffs
+  }else if(iPuff == trial.puffNum){//got all the puffs
 	
   }else if (trial.trialIsRunning){//starting an stopping puffs
     //Turning Puff on and off while correct trial type running
@@ -345,7 +345,7 @@ void updatePuff(unsigned long now){
       trial.PuffStartMillis = now;
       serialOut(now,"Puff",trial.currentTrial);
       digitalWrite(ledPuff.ledPin,HIGH);
-    } else if(ledPuff.isOnLED && now>ledStop){
+    } else if(ledPuff.isOnLED && now>puffStop){
       ledPuff.isOnLED = false;
       digitalWrite(ledPuff.ledPin,LOW);
 	  iPuff += 1;

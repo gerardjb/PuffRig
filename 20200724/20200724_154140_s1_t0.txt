@@ -1,0 +1,1 @@
+session=1;trial=0;date=20200724;time=154140;SetValue() did not handle 'filePath';SetValue() did not handle 'fileName';trial.numTrial=3;trial.prePuffDur=250;trial.puffNum=24;trial.puffFreq=8;trial.interTrialInterval=5;sessionNumber=0;sessionDur=1000;numTrial=3;trialDur=1000;interTrialInteval=5;prePuffDur=250;puffNum=24;puffFreq=8;versionStr=eyeblink3_4.cpp;
