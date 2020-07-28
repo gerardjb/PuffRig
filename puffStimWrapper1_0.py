@@ -34,7 +34,7 @@ for ind, trialid in enumerate(df.trialid):
 
     if trialid==0:
         print('Got startSession loop')
-        time.sleep(1)
+        raw_input('Hit return when camera is ready')
         t.startSession()
     #poll for when the current trial has finished
     while not t.trial['justFinished']:

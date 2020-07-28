@@ -127,7 +127,7 @@ void setup()
   digitalWrite(ledPuff.ledPin,LOW);
   
   //Initialize serial
-  Serial.begin(115200);
+  Serial.begin(9600);
  
 }
 
@@ -301,7 +301,7 @@ void GetState() {
 
 //Setting experiment parameters
 void SetTrial(String name, String strValue) {
-  int value = strValue.toInt();
+  float value = strValue.toFloat();
 
   //trial
   if (name == "numTrial") {
