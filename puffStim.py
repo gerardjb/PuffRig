@@ -85,7 +85,7 @@ class eyeblink():
         thread.start()
             
         #save all serial data to file, set in setsavepath
-        self.savepath = ''
+        self.savepath = '/media/usb/'
         self.filePtr = None
         
         self.arduinoStateList = None #grab from arduino at start of trial, write into each epoch file

@@ -99,9 +99,9 @@ void setup()
   trial.sessionDur = (trial.numTrial*trial.trialDur); //
 
   trial.prePuffDur = 250;
-  trial.puffNum = 10;
-  trial.puffFreq = 2;
-  trial.interTrialInterval = 5000;//ms
+  trial.puffNum = 2;
+  trial.puffFreq = 10;
+  trial.interTrialInterval = 500;//ms
   trial.ITIstartMillis = 0;//ms
 
   trial.trialPin = 7;//pin for conveying trial state
@@ -121,7 +121,7 @@ void setup()
   digitalWrite(13,LOW);
 
   //CS/US structure and pin settings, intially at Arduino grnd
-  ledPuff.ledPin = 4;
+  ledPuff.ledPin = 5;
   ledPuff.isOnLED = false;
   pinMode(ledPuff.ledPin,OUTPUT);
   digitalWrite(ledPuff.ledPin,LOW);
@@ -177,14 +177,14 @@ void startTrial(unsigned long now){
 
 //End trial
 void stopTrial(unsigned long now) {
+
+  //If this is the last trial, end session
+  if (trial.currentTrial == trial.numTrial) {
+  stopSession(now);
+  }
   //
   trial.trialIsRunning = false;
   serialOut(now, "stopTrial", trial.currentTrial);
-  
-  //If this is the last trial, end session
-  if (trial.currentTrial == trial.numTrial) {
-	stopSession(now);
-  }
   
   //Wait for next trial params to become available
   int i = 0;
@@ -214,13 +214,18 @@ void stopTrial(unsigned long now) {
 
 //End Session
 void stopSession(unsigned long now) {
+    if (trial.pinOnOff){
+    digitalWrite(trial.trialPin,LOW);
+    digitalWrite(13,LOW);
+    trial.pinOnOff = false;
+    }
+    trial.sessionIsRunning = false;
+    serialOut(now,"stopSession",trial.sessionNumber);
+    
     if (trial.trialIsRunning){
       trial.trialIsRunning = false;
       serialOut(now,"stopTrial",trial.currentTrial);
     }
-    trial.sessionIsRunning = false;
-    serialOut(now,"stopSession",trial.sessionNumber);
-
 }
 /////////////////////////////////////////////////////////////
 /*Communication via serial port */
@@ -240,9 +245,7 @@ void SerialIn(unsigned long now, String str) {
     Serial.println("version=" + versionStr);
   } else if (str == "startSession") {
     startSession(now);
-    serialOut(now,"arduinoStartSession",trial.sessionNumber);
-  }
-  else if (str == "stopSession") {
+  } else if (str == "stopSession") {
     stopSession(now);
   }
   else if (str.startsWith("getState")) {
@@ -331,7 +334,7 @@ void updateEncoder(unsigned long now) {
     
     long diff = now - rotaryencoder.count;
     
-    if (diff>=200){
+    if (diff>=100){
       signed long dist =  rotaryencoder.pos - posNow;
       serialOut(now, "rotary", dist);
       rotaryencoder.count = now;
@@ -361,8 +364,6 @@ void updatePuff(unsigned long now){
       ledPuff.isOnLED = false;
       digitalWrite(ledPuff.ledPin,LOW);
 	    iPuff += 1;
-      serialOut(now,"nextPuff",trial.trialStartMillis + trial.prePuffDur + round(1/trial.puffFreq*1000*iPuff));
-      serialOut(now,"iPuff",iPuff);
     }
   }
 }

@@ -166,7 +166,7 @@ class masterStream:
                             camera.annotate_text_size = 6
                             camera.annotate_text = 'off'
                             #Also do initialization of data paths
-                            savePathInit = 'data/'
+                            savePathInit = '/media/usb/'
                             dateStr = time.strftime("%Y%m%d")
                             savePath = savePathInit + dateStr + '/'
                             if not os.path.exists(savePath):
@@ -217,7 +217,7 @@ class masterStream:
         
     def startCamera(self):
         global camera
-        with picamera.PiCamera(resolution='160x120', framerate=150) as camera:
+        with picamera.PiCamera(resolution='160x128', framerate=150) as camera:
             global output
             output = masterStream.StreamingOutput()
             #Uncomment the next line to change your Pi's Camera rotation (in degrees)
