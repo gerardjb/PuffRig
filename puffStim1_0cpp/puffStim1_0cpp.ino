@@ -147,6 +147,14 @@ void startSession(unsigned long now) {
     serialOut(now, "trialDur", trial.trialDur);
     trial.currentTrial = 0;
     
+	//Trying to set trial parameters prior to start of session
+	if (Serial.available() > 0) {
+		String inString = Serial.readStringUntil('\n');
+		inString.replace("\n","");
+		inString.replace("\r","");
+		SerialIn(now, inString);
+	}
+	
     serialOut(now, "startSession", trial.sessionNumber);
     serialOut(now, "startTrial", trial.currentTrial);
 
@@ -288,7 +296,7 @@ void GetState() {
 }
 
 //Setting experiment parameters
-void SetTrial(String name, String strValue) {
+void SetTrial(String name, String strValue,unsigned long now) {
   int value = strValue.toInt();
 
   //trial

@@ -12,13 +12,13 @@ import puffStim
 # General parameters
 #t = eyeblink.eyeblink()  # I think this can be deleted?
 t = puffStim.eyeblink() # create an eyeblink object
-t.settrial('numTrial',3)
+t.settrial('numTrial',8)
 time.sleep(0.01)
 #%%
 # Trial-specific paramaters
 # First, open csv file with trial-specific paramaters
 #filepath = 'S:\\oostland\\Protocols\\Eyeblink_rig' # Possibly stil change
-file = 'puffTime.csv'
+file = 'puffTimePrec.csv'
 df = pd.read_csv(file)
 
 
@@ -34,7 +34,7 @@ for ind, trialid in enumerate(df.trialid):
 
     if trialid==0:
         print('Got startSession loop')
-        time.sleep(3)
+        time.sleep(1)
         t.startSession()
     #poll for when the current trial has finished
     while not t.trial['justFinished']:
