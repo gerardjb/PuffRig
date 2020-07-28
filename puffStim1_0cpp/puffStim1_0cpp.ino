@@ -27,7 +27,7 @@ struct trial
   //Trial timing and numbering
   boolean trialIsRunning;
   int currentTrial;
-  unsigned long trialDur;//ms trial duration
+  float trialDur;//ms trial duration
   unsigned long numTrial;//number of trials we want
   unsigned long trialStartMillis; //ms time trial starts
   unsigned long interTrialInterval; //ms inter-trial interval 
@@ -94,14 +94,14 @@ void setup()
 
   trial.trialIsRunning = false;
   trial.trialDur = 1000; // epoch has to be >= (preDur + xxx + postDur)
-  trial.numTrial = 2;
+  trial.numTrial = 8;
   
   trial.sessionDur = (trial.numTrial*trial.trialDur); //
 
   trial.prePuffDur = 250;
-  trial.puffNum = 2;
-  trial.puffFreq = 10;
-  trial.interTrialInterval = 500;//ms
+  trial.puffNum = 24;
+  trial.puffFreq = 8;
+  trial.interTrialInterval = 5000;//ms
   trial.ITIstartMillis = 0;//ms
 
   trial.trialPin = 7;//pin for conveying trial state
@@ -147,20 +147,24 @@ void startSession(unsigned long now) {
     serialOut(now, "trialDur", trial.trialDur);
     trial.currentTrial = 0;
     
-	//Trying to set trial parameters prior to start of session
-	if (Serial.available() > 0) {
-		String inString = Serial.readStringUntil('\n');
-		inString.replace("\n","");
-		inString.replace("\r","");
-		SerialIn(now, inString);
-	}
+	
 	
     serialOut(now, "startSession", trial.sessionNumber);
+
+    //Trying to set trial parameters prior to start of session
+      if (Serial.available() > 0) {
+        String inString = Serial.readStringUntil('\n');
+        inString.replace("\n","");
+        inString.replace("\r","");
+        SerialIn(now, inString);
+      }
+    interTrialInterval = trial.interTrialInterval*1000;
+    
     serialOut(now, "startTrial", trial.currentTrial);
 
     trial.sessionIsRunning = true;
     trial.trialIsRunning = true;
-    interTrialInterval = trial.interTrialInterval*1000;
+    
     
   }
 }
@@ -296,7 +300,7 @@ void GetState() {
 }
 
 //Setting experiment parameters
-void SetTrial(String name, String strValue,unsigned long now) {
+void SetTrial(String name, String strValue) {
   int value = strValue.toInt();
 
   //trial
@@ -362,7 +366,7 @@ void updatePuff(unsigned long now){
   }else if (trial.trialIsRunning){//starting an stopping puffs
     //Turning Puff on and off while correct trial type running
     unsigned long puffStart = trial.trialStartMillis + trial.prePuffDur + round(1/trial.puffFreq*1000*iPuff);
-    unsigned long puffStop = 250 + puffStart;//after 5 millis, turn TTL off
+    unsigned long puffStop = 10 + puffStart;//after 5 millis, turn TTL off
     if (!ledPuff.isOnLED && now >= puffStart && now <= puffStop){
       ledPuff.isOnLED = true;
       trial.PuffStartMillis = now;
