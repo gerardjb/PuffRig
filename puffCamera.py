@@ -37,10 +37,6 @@ global trialNum
 trialNum = 0
 global justOff
 justOff = False
-framePerSave = 1000 #number of frames to collect before saving
-nFrame = 0 #number of frames currently in the python list of frames
-nSaves = 0 #number of frame chunks we have save to file
-savePathInit = '/media/usb/' #set the base save directory
 
 #Setting up the GPIO interface
 GPIO.setwarnings(False)
@@ -118,6 +114,13 @@ class masterStream:
     class StreamingHandler(server.BaseHTTPRequestHandler):          
         
         def do_GET(self):
+            framePerSave = 100 #number of frames to collect before saving
+            nFrame = 0 #number of frames currently in the python list of frames
+            nSaves = 0 #number of frame chunks we have save to file
+            savePathInit = '/media/usb/' #set the base save directory
+
+            print('nFrame =' + str(nFrame))
+            print('framePerSave = ' + str(framePerSave))
             if self.path == '/':
                 self.send_response(301)
                 self.send_header('Location', '/index.html')
@@ -151,7 +154,7 @@ class masterStream:
                         self.wfile.write(frame)
                         self.wfile.write(b'\r\n')
                         global camera
-                        if GPIO.input(on_pin) and 'd' in globals() and not  nFrame == framePerSave:
+                        if GPIO.input(on_pin) and 'd' in globals() and nFrame < framePerSave:
                             global trial_start
                             global firstFrame_idx
                             global d
@@ -167,7 +170,7 @@ class masterStream:
                             justOff = True
                             nFrame += 1
                         elif GPIO.input(on_pin) and 'd' in globals() and  nFrame == framePerSave:
-                            t = time.time()
+                            t = int(round(camera.frame.timestamp/1000)) - trial_start
                             #Also do initialization of data paths
                             dateStr = time.strftime("%Y%m%d")
                             savePath = savePathInit + dateStr + '/'
@@ -193,8 +196,10 @@ class masterStream:
                             print('Writing took '+str(elapsed))
                             nFrame = 0
                             nSaves += 1
+                            outdata = []
+                            d = []
                         elif ~GPIO.input(on_pin) and justOff:
-                            t = time.time()
+                            t = int(round(camera.frame.timestamp/1000)) - trial_start
                             camera.annotate_text_size = 6
                             camera.annotate_text = 'off'
                             #Also do initialization of data paths
@@ -219,7 +224,7 @@ class masterStream:
                             fByte = open(bytefName,'wb')
                             pickle.dump(outdata,fByte)
                             print('Wrote '+ bytefName)
-                            elapsed = time.time() - t
+                            elapsed = int(round(camera.frame.timestamp/1000)) - t
                             print('Writing took '+str(elapsed))
                             justOff = False
                             nSaves = 0

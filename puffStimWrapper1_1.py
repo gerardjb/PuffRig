@@ -11,7 +11,7 @@ import puffStim
 import signal
 
 #Initialize camera
-os.system("python3 eyeblinkCamera.py &")
+os.system("python3 puffCamera.py &")
 
 #%%
 # General parameters
@@ -24,7 +24,7 @@ time.sleep(0.01)
 def sig_handler(signal,frame):
     print("User ended session")
     print("Process-kill applied to the eyeblinkCamera subprocess")
-    os.system("pkill -9 -f eyeblinkCamera.py")
+    os.system("pkill -9 -f puffCamera.py")
     t.stopSession()
     t.__del__
 signal.signal(signal.SIGINT, sig_handler)
