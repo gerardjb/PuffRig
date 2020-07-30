@@ -94,14 +94,14 @@ void setup()
 
   trial.trialIsRunning = false;
   trial.trialDur = 1000; // epoch has to be >= (preDur + xxx + postDur)
-  trial.numTrial = 8;
+  trial.numTrial = 246;
   
   trial.sessionDur = (trial.numTrial*trial.trialDur); //
 
   trial.prePuffDur = 250;
-  trial.puffNum = 24;
-  trial.puffFreq = 8;
-  trial.interTrialInterval = 5000;//ms
+  trial.puffNum = 100;
+  trial.puffFreq = 0.5;
+  trial.interTrialInterval = 0;//ms
   trial.ITIstartMillis = 0;//ms
 
   trial.trialPin = 7;//pin for conveying trial state
@@ -127,7 +127,7 @@ void setup()
   digitalWrite(ledPuff.ledPin,LOW);
   
   //Initialize serial
-  Serial.begin(9600);
+  Serial.begin(115200);
  
 }
 
@@ -151,13 +151,6 @@ void startSession(unsigned long now) {
 	
     serialOut(now, "startSession", trial.sessionNumber);
 
-    //Trying to set trial parameters prior to start of session
-      if (Serial.available() > 0) {
-        String inString = Serial.readStringUntil('\n');
-        inString.replace("\n","");
-        inString.replace("\r","");
-        SerialIn(now, inString);
-      }
     interTrialInterval = trial.interTrialInterval*1000;
     
     serialOut(now, "startTrial", trial.currentTrial);
@@ -256,6 +249,7 @@ void SerialIn(unsigned long now, String str) {
   if (str == "version") {
     Serial.println("version=" + versionStr);
   } else if (str == "startSession") {
+    Serial.println("Got to startSession command");
     startSession(now);
   } else if (str == "stopSession") {
     stopSession(now);
@@ -365,7 +359,7 @@ void updatePuff(unsigned long now){
 
   }else if (trial.trialIsRunning){//starting an stopping puffs
     //Turning Puff on and off while correct trial type running
-    unsigned long puffStart = trial.trialStartMillis + trial.prePuffDur + round(1/trial.puffFreq*1000*iPuff);
+    unsigned long puffStart = trial.trialStartMillis + trial.prePuffDur + 1/trial.puffFreq*1000*iPuff;
     unsigned long puffStop = 10 + puffStart;//after 5 millis, turn TTL off
     if (!ledPuff.isOnLED && now >= puffStart && now <= puffStop){
       ledPuff.isOnLED = true;
