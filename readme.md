@@ -2,3 +2,4 @@ This is code for controlling a behavioral experiment using two Arduino microcont
 
 
 <IMG SRC="https://github.com/gerardjb/EyeblinkRig/blob/master/docs/SampleWebpageViews.PNG" WIDTH=450 style="border:1px solid gray">
+# PuffRig
