@@ -114,10 +114,18 @@ class masterStream:
     class StreamingHandler(server.BaseHTTPRequestHandler):          
         
         def do_GET(self):
-            framePerSave = 100 #number of frames to collect before saving
+            framePerSave = 1500*2 #number of frames to collect before saving
             nFrame = 0 #number of frames currently in the python list of frames
             nSaves = 0 #number of frame chunks we have save to file
             savePathInit = '/media/usb/' #set the base save directory
+            #Also do initialization of data paths
+            dateStr = time.strftime("%Y%m%d")
+            savePath = savePathInit + dateStr + '/'
+            if not os.path.exists(savePath):
+                os.mkdir(savePath)
+            timeStr = time.strftime("%H%M%S")
+            datetimeStr = dateStr + '_' + timeStr
+
 
             print('nFrame =' + str(nFrame))
             print('framePerSave = ' + str(framePerSave))
@@ -170,14 +178,32 @@ class masterStream:
                             justOff = True
                             nFrame += 1
                         elif GPIO.input(on_pin) and 'd' in globals() and  nFrame == framePerSave:
-                            t = int(round(camera.frame.timestamp/1000)) - trial_start
-                            #Also do initialization of data paths
-                            dateStr = time.strftime("%Y%m%d")
-                            savePath = savePathInit + dateStr + '/'
-                            if not os.path.exists(savePath):
-                                os.mkdir(savePath)
-                            timeStr = time.strftime("%H%M%S")
-                            datetimeStr = dateStr + '_' + timeStr
+                            t = time.time()
+                            fName = savePath + datetimeStr + 'cam_t' + str(trialNum) + '_' + str(nSaves)
+                            #Contains metadata
+                            csvfName = fName + '.csv'
+                            #Contains stream captures of mjpeg encoded image data
+                            bytefName = fName + '.data'
+                            #csv save the metadata
+                            with open(csvfName,'w',newline = '') as outMetadata:
+                                wr = csv.writer(outMetadata)
+                                wr.writerows(d)
+                                print('Wrote '+csvfName)
+                            #pickle the image data
+                            fByte = open(bytefName,'wb')
+                            pickle.dump(outdata,fByte)
+                            #print('Wrote '+ bytefName)
+                            elapsed = time.time() - t
+                            print('Writing took '+str(elapsed))
+                            nFrame = 0
+                            nSaves += 1
+                            outdata = []
+                            d = []
+                        elif ~GPIO.input(on_pin) and justOff:
+                            t = time.time()
+                            camera.annotate_text_size = 6
+                            camera.annotate_text = 'off'
+                            trialNum += 1
                             fName = savePath + datetimeStr + 'cam_t' + str(trialNum) + '_' + str(nSaves)
                             #Contains metadata
                             csvfName = fName + '.csv'
@@ -193,38 +219,6 @@ class masterStream:
                             pickle.dump(outdata,fByte)
                             print('Wrote '+ bytefName)
                             elapsed = time.time() - t
-                            print('Writing took '+str(elapsed))
-                            nFrame = 0
-                            nSaves += 1
-                            outdata = []
-                            d = []
-                        elif ~GPIO.input(on_pin) and justOff:
-                            t = int(round(camera.frame.timestamp/1000)) - trial_start
-                            camera.annotate_text_size = 6
-                            camera.annotate_text = 'off'
-                            #Also do initialization of data paths
-                            dateStr = time.strftime("%Y%m%d")
-                            savePath = savePathInit + dateStr + '/'
-                            if not os.path.exists(savePath):
-                                os.mkdir(savePath)
-                            trialNum += 1
-                            timeStr = time.strftime("%H%M%S")
-                            datetimeStr = dateStr + '_' + timeStr
-                            fName = savePath + datetimeStr + 'cam_t' + str(trialNum) + '_' + str(nSaves)
-                            #Contains metadata
-                            csvfName = fName + '.csv'
-                            #Contains stream captures of mjpeg encoded image data
-                            bytefName = fName + '.data'
-                            #csv save the metadata
-                            with open(csvfName,'w',newline = '') as outMetadata:
-                                wr = csv.writer(outMetadata)
-                                wr.writerows(d)
-                                print('Wrote '+csvfName)
-                            #pickle the image data
-                            fByte = open(bytefName,'wb')
-                            pickle.dump(outdata,fByte)
-                            print('Wrote '+ bytefName)
-                            elapsed = int(round(camera.frame.timestamp/1000)) - t
                             print('Writing took '+str(elapsed))
                             justOff = False
                             nSaves = 0
