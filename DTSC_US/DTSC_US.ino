@@ -24,7 +24,7 @@ const int stepPin = 11;//step pin
 const int dirPin = 12;//direction pin
 
 //Cues for movement/direction
-const long target = 20;
+const long target = 10;
 volatile long steps = 0;
 volatile byte dirState = HIGH;
 
@@ -38,7 +38,7 @@ void setup()
   pinMode(M1pin,OUTPUT);
   digitalWrite(M1pin,LOW);
   pinMode(M2pin,OUTPUT);
-  digitalWrite(M2pin,HIGH);
+  digitalWrite(M2pin,LOW);
   
   //Setup pin for deactivating the motor
   pinMode(slpPin,OUTPUT);
@@ -62,7 +62,7 @@ void SerialIn(String str){
     return;
   }
   if (str == "free"){
-    digitalWrite(slpPin,HIGH);
+    digitalWrite(slpPin,LOW);
     Serial.println("Motor free");
   }else if (str == "active"){
     digitalWrite(slpPin,HIGH);
@@ -73,7 +73,6 @@ void SerialIn(String str){
 void US()
 { 
 
-  for(int i=0;i<2;i++){
   while (steps<target){
     digitalWrite(stepPin,HIGH);
     delayMicroseconds(1000);
@@ -82,11 +81,20 @@ void US()
     steps++;
   };
   steps = 0;
-  Serial.println("US done" + String(digitalRead(dirPin)));
   digitalWrite(dirPin,!digitalRead(dirPin));
+  digitalWrite(M1pin,HIGH);
+  digitalWrite(M2pin,HIGH);
+  while (steps<target*2){
+    digitalWrite(stepPin,HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(stepPin,LOW);
+    delayMicroseconds(1000);
+    steps++;
   };
-  
   steps = 0;
+  digitalWrite(dirPin,!digitalRead(dirPin));
+  digitalWrite(M1pin,LOW);
+  digitalWrite(M2pin,LOW);
   Serial.println("US done" + String(dirState));
   
 }
